@@ -35,6 +35,7 @@ function isEnterOrSpaceKey(event) {
 }
 
 export default class ImageGallery extends React.Component {
+  _isMounted = false;
   static propTypes = {
     flickThreshold: number,
     items: arrayOf(shape({
@@ -245,6 +246,7 @@ export default class ImageGallery extends React.Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     const { autoPlay } = this.props;
     if (autoPlay) {
       this.play();
@@ -301,6 +303,7 @@ export default class ImageGallery extends React.Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('mousedown', this.handleMouseDown);
     this.removeScreenChangeEvent();
@@ -948,26 +951,28 @@ export default class ImageGallery extends React.Component {
 
   handleResize() {
     const { currentIndex } = this.state;
-    if (this.imageGallery && this.imageGallery.current) {
-      this.setState({ galleryWidth: this.imageGallery.current.offsetWidth });
-    }
-
-    if (this.imageGallerySlideWrapper && this.imageGallerySlideWrapper.current) {
-      this.setState({
-        gallerySlideWrapperHeight: this.imageGallerySlideWrapper.current.offsetHeight,
-      });
-    }
-
-    if (this.thumbnailsWrapper && this.thumbnailsWrapper.current) {
-      if (this.isThumbnailVertical()) {
-        this.setState({ thumbnailsWrapperHeight: this.thumbnailsWrapper.current.offsetHeight });
-      } else {
-        this.setState({ thumbnailsWrapperWidth: this.thumbnailsWrapper.current.offsetWidth });
+    if (this._isMounted) {
+      if (this.imageGallery && this.imageGallery.current) {
+        this.setState({ galleryWidth: this.imageGallery.current.offsetWidth });
       }
-    }
 
-    // Adjust thumbnail container when thumbnail width or height is adjusted
-    this.setThumbsTranslate(-this.getThumbsTranslate(currentIndex));
+      if (this.imageGallerySlideWrapper && this.imageGallerySlideWrapper.current) {
+        this.setState({
+          gallerySlideWrapperHeight: this.imageGallerySlideWrapper.current.offsetHeight,
+        });
+      }
+
+      if (this.thumbnailsWrapper && this.thumbnailsWrapper.current) {
+        if (this.isThumbnailVertical()) {
+          this.setState({ thumbnailsWrapperHeight: this.thumbnailsWrapper.current.offsetHeight });
+        } else {
+          this.setState({ thumbnailsWrapperWidth: this.thumbnailsWrapper.current.offsetWidth });
+        }
+      }
+
+      // Adjust thumbnail container when thumbnail width or height is adjusted
+      this.setThumbsTranslate(-this.getThumbsTranslate(currentIndex));
+    }
   }
 
   initResizeObserver(element) {
